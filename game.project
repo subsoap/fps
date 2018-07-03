@@ -6,7 +6,7 @@ render = /rendercam/rendercam.renderc
 shared_state = 1
 
 [project]
-title = fps
+title = First Person Shooter Example for Defold
 dependencies = https://github.com/rgrams/rendercam/archive/master.zip,https://github.com/subsoap/defos/archive/master.zip
 
 [sprite]

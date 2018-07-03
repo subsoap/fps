@@ -1,8 +1,46 @@
+function window_callback(self, event, data)
+	if event == window.WINDOW_EVENT_FOCUS_LOST then
+		print("window.WINDOW_EVENT_FOCUS_LOST")
+		self.window_focus = false
+	elseif event == window.WINDOW_EVENT_FOCUS_GAINED then
+		print("window.WINDOW_EVENT_FOCUS_GAINED")
+		self.window_focus = true
+	end
+end
 
+function update_cursor(self)
+	
+	local yaw_speed = 0.04
+	local pitch_speed = 0.025
+	local max_speed = 10
+
+	local dx = self.cursor_x - self.cursor_x_last_frame
+	local dy = self.cursor_y - self.cursor_y_last_frame
+	
+	self.cursor_x_last_frame = 960/2
+	self.cursor_y_last_frame = 640/2
+
+
+	if dx > 0 then
+		self.yaw = self.yaw + math.min(dx, max_speed) * -1 * yaw_speed / 10
+	elseif dx < 0 then
+		self.yaw = self.yaw + math.max(dx, -max_speed) * -1 * yaw_speed / 10
+	end
+
+	if dy > 0 then
+		self.pitch = self.pitch + math.min(dy, max_speed) * pitch_speed / 10
+	elseif dy < 0 then
+		self.pitch = self.pitch + math.max(dy, -max_speed) * pitch_speed / 10
+	end		
+	
+end
 
 function init(self)
 	--defos.set_cursor_locked(true)
-
+	defos.set_view_size(nil, nil, 960, 640)
+	defos.set_cursor_visible(false)
+	window.set_listener(window_callback)
+	self.window_focus = true
 	msg.post(".", "acquire_input_focus")
 	self.camera = go.get_id("/camera")
 	self.position = go.get_position(self.camera)
@@ -12,6 +50,11 @@ function init(self)
 	self.yaw = 0
 	self.roll = 0
 
+
+	self.cursor_x = 0
+	self.cursor_y = 0
+	self.cursor_x_last_frame = 0
+	self.cursor_y_last_frame = 0
 end
 
 function final(self)
@@ -25,7 +68,10 @@ end
 
 
 function update(self, dt)
-	--defos.move_cursor_to(960/2, 640/2)
+	update_cursor(self)
+	if self.window_focus == true then
+		defos.move_cursor_to(960/2, 640/2)
+	end
 
 	--print(self.pitch)
 	
@@ -49,30 +95,17 @@ function on_message(self, message_id, message, sender)
 end
 
 function on_input(self, action_id, action)
+
+	--pprint(action)
 	if action_id == hash("key_esc") then
 		msg.post("@system:", "exit", {code = 0})
 	end
 
-	
-	local yaw_speed = 0.04
-	local pitch_speed = 0.025
-	local max_speed = 10
-	
-	if action.dx ~= nil or action.dy ~= nil then
-		--pprint(action)
-		if action.dx > 0 then
-			self.yaw = self.yaw + math.min(action.dx, max_speed) * -1 * yaw_speed / 10
-		elseif action.dx < 0 then
-			self.yaw = self.yaw + math.max(action.dx, -max_speed) * -1 * yaw_speed / 10
-		end
-		
-		if action.dy > 0 then
-			self.pitch = self.pitch + math.min(action.dy, max_speed) * pitch_speed / 10
-		elseif action.dy < 0 then
-			self.pitch = self.pitch + math.max(action.dy, -max_speed) * pitch_speed / 10
-		end		
+	----[[
+	if action.x ~= nil then self.cursor_x = action.screen_x end
+	if action.y ~= nil then self.cursor_y = action.screen_y end
+	--]]
 
-	end	
 end
 
 function on_reload(self)
