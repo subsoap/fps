@@ -5,6 +5,11 @@ function window_callback(self, event, data)
 	elseif event == window.WINDOW_EVENT_FOCUS_GAINED then
 		print("window.WINDOW_EVENT_FOCUS_GAINED")
 		self.window_focus = true
+	elseif event == window.WINDOW_EVENT_RESIZED then
+		print("Window resized: ", data.width, data.height)
+		local _, _, w, h = defos.get_view_size()
+		self.view_width = w
+		self.view_height = h
 	end
 end
 
@@ -14,11 +19,15 @@ function update_cursor(self)
 	local pitch_speed = 0.025
 	local max_speed = 10
 
+	print(self.cursor_x, self.cursor_x_last_frame)
 	local dx = self.cursor_x - self.cursor_x_last_frame
+	if math.abs(dx) <= 1 then dx = 0 end
 	local dy = self.cursor_y - self.cursor_y_last_frame
+	if math.abs(dy) <= 1 then dy = 0 end
+	print(dx, dy)
 	
-	self.cursor_x_last_frame = 960/2
-	self.cursor_y_last_frame = 640/2
+	self.cursor_x_last_frame = self.view_width/2
+	self.cursor_y_last_frame = self.view_height/2
 
 
 	if dx > 0 then
@@ -36,9 +45,16 @@ function update_cursor(self)
 end
 
 function init(self)
+	--defos.set_view_size(nil, nil, 960, 640)
+	defos.set_maximized(true)
+	
+	local _, _, w, h = defos.get_view_size()
+	self.view_width = w
+	self.view_height = h
+		
 	--defos.set_cursor_locked(true)
-	defos.set_view_size(nil, nil, 960, 640)
-	defos.set_cursor_visible(false)
+
+	--defos.set_cursor_visible(false)
 	window.set_listener(window_callback)
 	self.window_focus = true
 	msg.post(".", "acquire_input_focus")
@@ -70,7 +86,7 @@ end
 function update(self, dt)
 	update_cursor(self)
 	if self.window_focus == true then
-		defos.move_cursor_to(960/2, 640/2)
+		defos.move_cursor_to(self.view_width/2, self.view_height/2)
 	end
 
 	--print(self.pitch)
@@ -86,6 +102,9 @@ function update(self, dt)
 	self.orientation = vmath.slerp(0.9, vmath.normalize(self.quat_yaw * self.quat_pitch), self.orientation)
 
 	go.set_rotation(self.orientation, self.camera)
+
+	self.position = self.position - vmath.normalize(vmath.vector3(math.sin(self.yaw * dt * 100 ), 0, math.cos(self.yaw * dt * 100))) --* 10
+	go.set_position(self.position, self.camera)
 
 end
 
