@@ -1,0 +1,81 @@
+
+
+function init(self)
+	--defos.set_cursor_locked(true)
+
+	msg.post(".", "acquire_input_focus")
+	self.camera = go.get_id("/camera")
+	self.position = go.get_position(self.camera)
+	self.rotation = go.get_rotation()
+	self.target_rotation = go.get_rotation()
+	self.pitch = 0
+	self.yaw = 0
+	self.roll = 0
+
+end
+
+function final(self)
+	-- Add finalization code here
+	-- Remove this function if not needed
+end
+
+local function quat_to_euler_angles(quat)
+end
+
+
+
+function update(self, dt)
+	--defos.move_cursor_to(960/2, 640/2)
+
+	--print(self.pitch)
+	
+	if self.pitch > 0.7 then self.pitch = 0.7 end
+	if self.pitch < -0.8 then self.pitch = -0.8 end
+	
+	self.quat_pitch = vmath.quat_axis_angle(vmath.vector3(1,0,0), self.pitch * dt * 100 )
+	self.quat_yaw = vmath.quat_axis_angle(vmath.vector3(0,1,0), self.yaw * dt * 100 )
+	self.quat_roll = vmath.quat_axis_angle(vmath.vector3(0,0,1), self.roll * dt * 100 )
+	if self.orientation == nil then self.orientation = vmath.normalize(self.quat_yaw * self.quat_pitch) end
+	
+	self.orientation = vmath.slerp(0.9, vmath.normalize(self.quat_yaw * self.quat_pitch), self.orientation)
+
+	go.set_rotation(self.orientation, self.camera)
+
+end
+
+function on_message(self, message_id, message, sender)
+	-- Add message-handling code here
+	-- Remove this function if not needed
+end
+
+function on_input(self, action_id, action)
+	if action_id == hash("key_esc") then
+		msg.post("@system:", "exit", {code = 0})
+	end
+
+	
+	local yaw_speed = 0.04
+	local pitch_speed = 0.025
+	local max_speed = 10
+	
+	if action.dx ~= nil or action.dy ~= nil then
+		--pprint(action)
+		if action.dx > 0 then
+			self.yaw = self.yaw + math.min(action.dx, max_speed) * -1 * yaw_speed / 10
+		elseif action.dx < 0 then
+			self.yaw = self.yaw + math.max(action.dx, -max_speed) * -1 * yaw_speed / 10
+		end
+		
+		if action.dy > 0 then
+			self.pitch = self.pitch + math.min(action.dy, max_speed) * pitch_speed / 10
+		elseif action.dy < 0 then
+			self.pitch = self.pitch + math.max(action.dy, -max_speed) * pitch_speed / 10
+		end		
+
+	end	
+end
+
+function on_reload(self)
+	-- Add reload-handling code here
+	-- Remove this function if not needed
+end
