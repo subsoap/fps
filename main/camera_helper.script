@@ -31,7 +31,7 @@ function update_cursor(self)
 	-- doing floor / ceil seems to fix drift?
 	local dx = self.cursor_x - math.floor(self.cursor_x_last_frame)
 	local dy = self.cursor_y - math.ceil(self.cursor_y_last_frame)
-	print(self.cursor_x, math.floor(self.cursor_x_last_frame), self.cursor_y, math.ceil(self.cursor_y_last_frame))
+	--print(self.cursor_x, math.floor(self.cursor_x_last_frame), self.cursor_y, math.ceil(self.cursor_y_last_frame))
 	--[[ this needs to be fixed properly 
 	print(self.cursor_x, self.cursor_x_last_frame) -- sometimes with certain window sizes even with mouse pos static it's different!?
 	
@@ -78,6 +78,7 @@ function init(self)
 	msg.post(".", "acquire_input_focus")
 	self.camera = go.get_id("/camera")
 	self.position = go.get_position(self.camera)
+	self.position_actual = go.get_position(self.camera)
 	self.rotation = go.get_rotation()
 	self.target_rotation = go.get_rotation()
 	self.pitch = 0
@@ -93,6 +94,8 @@ function init(self)
 	self.cursor_y = 0
 	self.cursor_x_last_frame = 0
 	self.cursor_y_last_frame = 0
+
+	self.movement_timer = 0
 end
 
 function final(self)
@@ -101,8 +104,17 @@ function final(self)
 end
 
 function update(self, dt)
-	self.movement_speed = 3
+	if self.moving == true then
+		self.movement_timer = math.min(self.movement_timer + dt * 4, 1.0)
+	else
+		self.movement_timer = 0
+	end
+	self.movement_speed = vmath.lerp(self.movement_timer, 3.5, 5)
+
+	print(self.movement_speed)
+	
 	local filter_amount = 0.2
+	
 	
 	update_cursor(self)
 	
@@ -112,7 +124,7 @@ function update(self, dt)
 
 	--print(self.pitch)
 
-	print(self.pitch)
+	--print(self.pitch, self.yaw)
 	if self.pitch > 1.2 then self.pitch = 1.2 end
 	if self.pitch < -1.2 then self.pitch = -1.2 end
 
@@ -153,9 +165,10 @@ function update(self, dt)
 	if ((self.position - self.movement * self.movement_speed).x) == ((self.position - self.movement * self.movement_speed).x) then
 		self.position = self.position - self.movement * self.movement_speed
 	end
+
+	self.position_actual = vmath.lerp(0.15, self.position_actual, self.position)
 	
-	
-	go.set_position(self.position, self.camera)
+	go.set_position(self.position_actual, self.camera)
 
 	--pprint(self.movement)
 	--pprint(self.position)
@@ -164,6 +177,7 @@ function update(self, dt)
 	self.move_back = false
 	self.move_left = false
 	self.move_right = false	
+	self.moving = false
 end
 
 function on_message(self, message_id, message, sender)
@@ -173,10 +187,22 @@ end
 
 function on_input(self, action_id, action)
 
-	if action_id == hash("key_w") then self.move_forward = true end
-	if action_id == hash("key_a") then self.move_left = true end
-	if action_id == hash("key_s") then self.move_back = true end
-	if action_id == hash("key_d") then self.move_right = true end
+	if action_id == hash("key_w") then 
+		self.move_forward = true
+		self.moving = true
+	end
+	if action_id == hash("key_a") then 
+		self.move_left = true 
+		self.moving = true
+	end
+	if action_id == hash("key_s") then 
+		self.move_back = true 
+		self.moving = true
+	end
+	if action_id == hash("key_d") then 
+		self.move_right = true 
+		self.moving = true
+	end
 
 	if action_id == hash("key_f11") and action.released then
 		defos.toggle_fullscreen()
