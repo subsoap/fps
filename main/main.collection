@@ -5026,7 +5026,7 @@ embedded_instances {
   "  type: \"sprite\"\n"
   "  data: \"tile_set: \\\"/main/assets.atlas\\\"\\n"
   "default_animation: \\\"logo\\\"\\n"
-  "material: \\\"/builtins/materials/sprite.material\\\"\\n"
+  "material: \\\"/main/sprite_nomipmap.material\\\"\\n"
   "blend_mode: BLEND_MODE_ALPHA\\n"
   "\"\n"
   "  position {\n"

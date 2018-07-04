@@ -19,7 +19,10 @@ function update_cursor(self)
 	local pitch_speed = 0.025
 	local max_speed = 10
 
-	--print(self.cursor_x, self.cursor_x_last_frame)
+	
+
+	-- this needs to be fixed properly 
+	--print(self.cursor_x, self.cursor_x_last_frame) -- sometimes with certain window sizes even with mouse pos static it's different!?
 	local dx = self.cursor_x - self.cursor_x_last_frame
 	if math.abs(dx) <= 1 then dx = 0 end
 	local dy = self.cursor_y - self.cursor_y_last_frame
@@ -123,22 +126,22 @@ function update(self, dt)
 
 	self.movement = vmath.vector3()
 	if self.move_forward then
-		self.movement = self.movement + vmath.normalize(vmath.vector3(math.sin(self.yaw * dt * 100 ), 0, math.cos(self.yaw * dt * 100)))
+		self.movement = vmath.normalize(self.movement + vmath.normalize(vmath.vector3(math.sin(self.yaw * dt * 100 ), 0, math.cos(self.yaw * dt * 100))))
 	end
 	if self.move_back then
-		self.movement = self.movement - vmath.normalize(vmath.vector3(math.sin(self.yaw * dt * 100 ), 0, math.cos(self.yaw * dt * 100)))
+		self.movement = vmath.normalize(self.movement - vmath.normalize(vmath.vector3(math.sin(self.yaw * dt * 100 ), 0, math.cos(self.yaw * dt * 100))))
 	end	
 	if self.move_left then
 		local vec = vmath.normalize(vmath.vector3(math.sin(self.yaw * dt * 100 ), 0, math.cos(self.yaw * dt * 100)))
-		pprint(vec)
+		--pprint(vec)
 		local new_vec = vmath.rotate(vmath.quat_rotation_y(math.pi/2), vec)
-		self.movement = self.movement + new_vec
+		self.movement = vmath.normalize(self.movement + new_vec)
 	end
 	if self.move_right then
 		local vec = vmath.normalize(vmath.vector3(math.sin(self.yaw * dt * 100 ), 0, math.cos(self.yaw * dt * 100)))
-		pprint(vec)
+		--pprint(vec)
 		local new_vec = vmath.rotate(vmath.quat_rotation_y(-math.pi/2), vec)
-		self.movement = self.movement + new_vec
+		self.movement = vmath.normalize(self.movement + new_vec)
 	end	
 	
 	self.position = self.position - self.movement * self.movement_speed
