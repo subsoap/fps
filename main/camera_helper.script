@@ -59,10 +59,33 @@ function update_cursor(self)
 	
 end
 
+local function jump(self)
+	self.velocity.y = self.jump_takeoff_speed
+	if self.position.z == self.position_floor then
+		self.velocity.y = self.jump_takeoff_speed
+	end
+end
+
+local function abort_jump(self)
+	if self.velocity.y > 0 then
+		self.velocity.y = self.velocity.y * 0.5
+	end
+end
+
+local function update_jump(self)
+	
+end
+
 function init(self)
 	defos.set_view_size(nil, nil, 960, 640)
 	defos.toggle_fullscreen()
-	
+
+
+
+	self.jumping = false
+	self.jump_takeoff_speed = 500
+	self.velocity = vmath.vector3(0,0,0)
+	self.gravity = -1000
 	
 	--defos.set_maximized(true)
 	
@@ -79,6 +102,7 @@ function init(self)
 	self.camera = go.get_id("/camera")
 	self.position = go.get_position(self.camera)
 	self.position_actual = go.get_position(self.camera)
+	self.position_floor = self.position.y
 	self.rotation = go.get_rotation()
 	self.target_rotation = go.get_rotation()
 	self.pitch = 0
@@ -104,6 +128,25 @@ function final(self)
 end
 
 function update(self, dt)
+	update_jump(self)
+
+	local acceleration = vmath.vector3(0, self.gravity, 0)
+	local dv = acceleration * dt
+
+	local v0 = self.velocity
+	v0.y = math.max(v0.y, -1080) -- max downward velocity
+	self.velocity = self.velocity + dv
+	local dp = (v0 + self.velocity) * dt * 0.5
+	pprint(dp)
+	self.position = self.position + dp
+
+	if self.position.y < self.position_floor then
+		self.position.y = self.position_floor
+		self.velocity.y = 0
+	end
+
+	print(self.position.y, self.velocity.y)
+	
 	if self.moving == true then
 		self.movement_timer = math.min(self.movement_timer + dt * 4, 1.0)
 	else
@@ -178,6 +221,7 @@ function update(self, dt)
 	self.move_left = false
 	self.move_right = false	
 	self.moving = false
+	self.key_space = false
 end
 
 function on_message(self, message_id, message, sender)
@@ -186,6 +230,14 @@ function on_message(self, message_id, message, sender)
 end
 
 function on_input(self, action_id, action)
+
+	if action_id == hash("key_space") and action.pressed then
+		print("jump")
+		jump(self)		
+	elseif action.released then
+		abort_jump(self)
+		print("abort jump")
+	end
 
 	if action_id == hash("key_w") then 
 		self.move_forward = true
