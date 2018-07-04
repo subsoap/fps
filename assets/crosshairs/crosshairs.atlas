@@ -1,0 +1,12 @@
+images {
+  image: "/assets/crosshairs/circle_dot_1.png"
+}
+images {
+  image: "/assets/crosshairs/crosshair_1.png"
+}
+images {
+  image: "/assets/crosshairs/circle_dot_1_2x.png"
+}
+margin: 0
+extrude_borders: 0
+inner_padding: 0

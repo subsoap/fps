@@ -18,6 +18,10 @@ key_trigger {
   input: KEY_D
   action: "key_d"
 }
+key_trigger {
+  input: KEY_F11
+  action: "key_f11"
+}
 mouse_trigger {
   input: MOUSE_BUTTON_1
   action: "touch"

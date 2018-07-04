@@ -2,9 +2,12 @@ function window_callback(self, event, data)
 	if event == window.WINDOW_EVENT_FOCUS_LOST then
 		print("window.WINDOW_EVENT_FOCUS_LOST")
 		self.window_focus = false
+		defos.set_cursor_visible(true)
 	elseif event == window.WINDOW_EVENT_FOCUS_GAINED then
 		print("window.WINDOW_EVENT_FOCUS_GAINED")
 		self.window_focus = true
+		defos.set_cursor_visible(false)
+		defos.move_cursor_to(self.view_width/2, self.view_height/2)
 	elseif event == window.WINDOW_EVENT_RESIZED then
 		print("Window resized: ", data.width, data.height)
 		local _, _, w, h = defos.get_view_size()
@@ -14,16 +17,23 @@ function window_callback(self, event, data)
 end
 
 function update_cursor(self)
-	
-	local yaw_speed = 0.04
-	local pitch_speed = 0.025
-	local max_speed = 25
+	if self.window_focus == false then return end
 
+	local speed_mod = 1.2
+	-- these should probably be based on screen size ratio?
+	local yaw_speed = 0.05 * speed_mod
+	local pitch_speed = 0.025 * speed_mod
+	local max_speed = 999999
+
+	-- dx and dy has to be calculated here, we can't use the values given by on_input
+	-- using action.x and action.y from on_input seems to be okay though
 	
-	local dx = self.cursor_x - self.cursor_x_last_frame
-	local dy = self.cursor_y - self.cursor_y_last_frame
+	-- doing floor / ceil seems to fix drift?
+	local dx = self.cursor_x - math.floor(self.cursor_x_last_frame)
+	local dy = self.cursor_y - math.ceil(self.cursor_y_last_frame)
+	print(self.cursor_x, math.floor(self.cursor_x_last_frame), self.cursor_y, math.ceil(self.cursor_y_last_frame))
 	--[[ this needs to be fixed properly 
-	--print(self.cursor_x, self.cursor_x_last_frame) -- sometimes with certain window sizes even with mouse pos static it's different!?
+	print(self.cursor_x, self.cursor_x_last_frame) -- sometimes with certain window sizes even with mouse pos static it's different!?
 	
 	if math.abs(dx) <= 1 then dx = 0 end
 	
@@ -51,6 +61,9 @@ end
 
 function init(self)
 	defos.set_view_size(nil, nil, 960, 640)
+	defos.toggle_fullscreen()
+	
+	
 	--defos.set_maximized(true)
 	
 	local _, _, w, h = defos.get_view_size()
@@ -89,44 +102,47 @@ end
 
 function update(self, dt)
 	self.movement_speed = 3
+	local filter_amount = 0.2
 	
 	update_cursor(self)
+	
 	if self.window_focus == true then
 		defos.move_cursor_to(self.view_width/2, self.view_height/2)
 	end
 
 	--print(self.pitch)
-	
-	if self.pitch > 0.7 then self.pitch = 0.7 end
-	if self.pitch < -0.8 then self.pitch = -0.8 end
+
+	print(self.pitch)
+	if self.pitch > 1.2 then self.pitch = 1.2 end
+	if self.pitch < -1.2 then self.pitch = -1.2 end
 
 
 	-- I need to wrap yaw but currently I'm using it incorrectly below so it messes up the rotation
 
-	self.quat_pitch = vmath.quat_axis_angle(vmath.vector3(1,0,0), self.pitch * dt * 100 )
-	self.quat_yaw = vmath.quat_axis_angle(vmath.vector3(0,1,0), self.yaw * dt * 100 )
-	self.quat_roll = vmath.quat_axis_angle(vmath.vector3(0,0,1), self.roll * dt * 100 )
+	self.quat_pitch = vmath.quat_axis_angle(vmath.vector3(1,0,0), self.pitch)-- * dt * 100 )
+	self.quat_yaw = vmath.quat_axis_angle(vmath.vector3(0,1,0), self.yaw)-- * dt * 100 )
+	self.quat_roll = vmath.quat_axis_angle(vmath.vector3(0,0,1), self.roll)-- * dt * 100 )
 	if self.orientation == nil then self.orientation = vmath.normalize(self.quat_yaw * self.quat_pitch) end
 	
-	self.orientation = vmath.slerp(0.44, vmath.normalize(self.quat_yaw * self.quat_pitch), self.orientation)
+	self.orientation = vmath.slerp(filter_amount, vmath.normalize(self.quat_yaw * self.quat_pitch), self.orientation)
 
 	go.set_rotation(self.orientation, self.camera)
 
 	self.movement = vmath.vector3()
 	if self.move_forward then
-		self.movement = vmath.normalize(self.movement + vmath.normalize(vmath.vector3(math.sin(self.yaw * dt * 100 ), 0, math.cos(self.yaw * dt * 100))))
+		self.movement = vmath.normalize(self.movement + vmath.normalize(vmath.vector3(math.sin(self.yaw  ), 0, math.cos(self.yaw ))))
 	end
 	if self.move_back then
-		self.movement = vmath.normalize(self.movement - vmath.normalize(vmath.vector3(math.sin(self.yaw * dt * 100 ), 0, math.cos(self.yaw * dt * 100))))
+		self.movement = vmath.normalize(self.movement - vmath.normalize(vmath.vector3(math.sin(self.yaw  ), 0, math.cos(self.yaw ))))
 	end	
 	if self.move_left then
-		local vec = vmath.normalize(vmath.vector3(math.sin(self.yaw * dt * 100 ), 0, math.cos(self.yaw * dt * 100)))
+		local vec = vmath.normalize(vmath.vector3(math.sin(self.yaw  ), 0, math.cos(self.yaw )))
 		--pprint(vec)
 		local new_vec = vmath.rotate(vmath.quat_rotation_y(math.pi/2), vec)
 		self.movement = vmath.normalize(self.movement + new_vec)
 	end
 	if self.move_right then
-		local vec = vmath.normalize(vmath.vector3(math.sin(self.yaw * dt * 100 ), 0, math.cos(self.yaw * dt * 100)))
+		local vec = vmath.normalize(vmath.vector3(math.sin(self.yaw  ), 0, math.cos(self.yaw )))
 		--pprint(vec)
 		local new_vec = vmath.rotate(vmath.quat_rotation_y(-math.pi/2), vec)
 		self.movement = vmath.normalize(self.movement + new_vec)
@@ -162,6 +178,10 @@ function on_input(self, action_id, action)
 	if action_id == hash("key_s") then self.move_back = true end
 	if action_id == hash("key_d") then self.move_right = true end
 
+	if action_id == hash("key_f11") and action.released then
+		defos.toggle_fullscreen()
+	end
+
 	--pprint(action)
 	if action_id == hash("key_esc") then
 		msg.post("@system:", "exit", {code = 0})
@@ -171,6 +191,7 @@ function on_input(self, action_id, action)
 	if action.x ~= nil then self.cursor_x = action.screen_x end
 	if action.y ~= nil then self.cursor_y = action.screen_y end
 	--]]
+
 
 end
 

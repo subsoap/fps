@@ -4,7 +4,7 @@ instances {
   prototype: "/rendercam/camera.go"
   position {
     x: 0.0
-    y: 0.0
+    y: 20.0
     z: 819.0
   }
   rotation {
@@ -83,7 +83,7 @@ embedded_instances {
   "}\n"
   "components {\n"
   "  id: \"crosshair\"\n"
-  "  component: \"/main/crosshair.gui\"\n"
+  "  component: \"/main/hud.gui\"\n"
   "  position {\n"
   "    x: 0.0\n"
   "    y: 0.0\n"
