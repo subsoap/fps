@@ -131,10 +131,18 @@ function update(self, dt)
 		local new_vec = vmath.rotate(vmath.quat_rotation_y(-math.pi/2), vec)
 		self.movement = vmath.normalize(self.movement + new_vec)
 	end	
+
+	-- how is this sometimes being set to nan?
+	-- the below is a check to make it won't become nan
+	if ((self.position - self.movement * self.movement_speed).x) == ((self.position - self.movement * self.movement_speed).x) then
+		self.position = self.position - self.movement * self.movement_speed
+	end
 	
-	self.position = self.position - self.movement * self.movement_speed
+	
 	go.set_position(self.position, self.camera)
 
+	pprint(self.movement)
+	pprint(self.position)
 
 	self.move_forward = false
 	self.move_back = false
