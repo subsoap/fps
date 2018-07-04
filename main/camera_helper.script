@@ -141,8 +141,8 @@ function update(self, dt)
 	
 	go.set_position(self.position, self.camera)
 
-	pprint(self.movement)
-	pprint(self.position)
+	--pprint(self.movement)
+	--pprint(self.position)
 
 	self.move_forward = false
 	self.move_back = false
