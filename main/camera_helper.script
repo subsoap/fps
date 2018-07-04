@@ -17,16 +17,18 @@ function update_cursor(self)
 	
 	local yaw_speed = 0.04
 	local pitch_speed = 0.025
-	local max_speed = 10
+	local max_speed = 25
 
 	
-
-	-- this needs to be fixed properly 
-	--print(self.cursor_x, self.cursor_x_last_frame) -- sometimes with certain window sizes even with mouse pos static it's different!?
 	local dx = self.cursor_x - self.cursor_x_last_frame
-	if math.abs(dx) <= 1 then dx = 0 end
 	local dy = self.cursor_y - self.cursor_y_last_frame
+	--[[ this needs to be fixed properly 
+	--print(self.cursor_x, self.cursor_x_last_frame) -- sometimes with certain window sizes even with mouse pos static it's different!?
+	
+	if math.abs(dx) <= 1 then dx = 0 end
+	
 	if math.abs(dy) <= 1 then dy = 0 end
+	--]]
 	--print(dx, dy)
 	
 	self.cursor_x_last_frame = self.view_width/2
@@ -57,7 +59,7 @@ function init(self)
 		
 	--defos.set_cursor_locked(true)
 
-	--defos.set_cursor_visible(false)
+	defos.set_cursor_visible(false)
 	window.set_listener(window_callback)
 	self.window_focus = true
 	msg.post(".", "acquire_input_focus")
@@ -85,20 +87,6 @@ function final(self)
 	-- Remove this function if not needed
 end
 
-local function quat_to_euler_angles(quat)
-end
-
-local function rotate_vector(vec, rads)
-	local sin = math.sin(rads)
-	local cos = math.sin(rads)
-	local tx = vec.z
-	local ty = vec.x
-	vec.z = (cos * tx) - (sin * ty)
-	vec.x = (sin * tx) + (cos * ty)
-	
-	return vmath.normalize(vec)
-end
-
 function update(self, dt)
 	self.movement_speed = 3
 	
@@ -120,7 +108,7 @@ function update(self, dt)
 	self.quat_roll = vmath.quat_axis_angle(vmath.vector3(0,0,1), self.roll * dt * 100 )
 	if self.orientation == nil then self.orientation = vmath.normalize(self.quat_yaw * self.quat_pitch) end
 	
-	self.orientation = vmath.slerp(0.9, vmath.normalize(self.quat_yaw * self.quat_pitch), self.orientation)
+	self.orientation = vmath.slerp(0.44, vmath.normalize(self.quat_yaw * self.quat_pitch), self.orientation)
 
 	go.set_rotation(self.orientation, self.camera)
 
