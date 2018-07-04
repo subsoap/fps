@@ -1,0 +1,15 @@
+images {
+  image: "/assets/images/extrashapes/diamond.png"
+}
+images {
+  image: "/assets/images/extrashapes/heart.png"
+}
+images {
+  image: "/assets/images/extrashapes/moon.png"
+}
+images {
+  image: "/assets/images/extrashapes/spade.png"
+}
+margin: 2
+extrude_borders: 0
+inner_padding: 2
