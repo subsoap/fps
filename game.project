@@ -12,3 +12,10 @@ dependencies = https://github.com/rgrams/rendercam/archive/master.zip,https://gi
 [sprite]
 max_count = 1024
 
+[physics]
+type = 3D
+debug = 1
+scale = 0.2
+gravity_y = -60.0
+debug_scale = 0.2
+
