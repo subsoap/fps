@@ -111,7 +111,7 @@ function update(self, dt)
 	end
 	self.movement_speed = vmath.lerp(self.movement_timer, 3.5, 5)
 
-	print(self.movement_speed)
+	--print(self.movement_speed)
 	
 	local filter_amount = 0.2
 	
