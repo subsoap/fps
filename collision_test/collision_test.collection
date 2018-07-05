@@ -694,8 +694,8 @@ embedded_instances {
   "    index: 0\\n"
   "    count: 3\\n"
   "  }\\n"
-  "  data: 500.0\\n"
-  "  data: 9.6655\\n"
+  "  data: 5000.0\\n"
+  "  data: 10.0\\n"
   "  data: 5000.0\\n"
   "}\\n"
   "linear_damping: 0.0\\n"
@@ -1110,7 +1110,7 @@ embedded_instances {
   "}\n"
   ""
   position {
-    x: 527.0
+    x: 596.0
     y: -52.0
     z: 47.0
   }
